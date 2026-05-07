@@ -1,0 +1,81 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Helper functions
+    function isSignedIn() {
+      return request.auth != null;
+    }
+    
+    function isEmailVerified() {
+      return isSignedIn() && request.auth.token.email_verified == true;
+    }
+
+    function isStoreOwner(storeId) {
+      return isSignedIn() && (
+        get(/databases/$(database)/documents/stores/$(storeId)).data.ownerId == request.auth.uid ||
+        (request.method != 'get' && request.method != 'list' && getAfter(/databases/$(database)/documents/stores/$(storeId)).data.ownerId == request.auth.uid)
+      );
+    }
+
+    function isStoreMember(storeId) {
+      return isSignedIn() && (
+        exists(/databases/$(database)/documents/stores/$(storeId)/members/$(request.auth.uid)) ||
+        (request.method != 'get' && request.method != 'list' && existsAfter(/databases/$(database)/documents/stores/$(storeId)/members/$(request.auth.uid)))
+      );
+    }
+
+    function isStoreAdmin(storeId) {
+      return isSignedIn() && (
+        get(/databases/$(database)/documents/stores/$(storeId)/members/$(request.auth.uid)).data.role == 'Admin' ||
+        (request.method != 'get' && request.method != 'list' && getAfter(/databases/$(database)/documents/stores/$(storeId)/members/$(request.auth.uid)).data.role == 'Admin')
+      );
+    }
+
+    // 1. Users - High priority
+    match /users/{userId} {
+      allow read, write: if isSignedIn() && request.auth.uid == userId;
+    }
+
+    // 2. Stores
+    match /stores/{storeId} {
+      allow read: if isSignedIn() && (resource == null || resource.data.ownerId == request.auth.uid || isStoreMember(storeId));
+      allow create: if isSignedIn();
+      allow update, delete: if isStoreOwner(storeId);
+
+      // Products
+      match /products/{productId} {
+        allow read: if isStoreMember(storeId) || isStoreOwner(storeId);
+        allow write: if isStoreMember(storeId) || isStoreOwner(storeId);
+      }
+
+      // Invitations
+      match /invitations/{inviteId} {
+        allow read: if isStoreOwner(storeId) || isStoreAdmin(storeId) || (isSignedIn() && request.auth.token.email == resource.data.email);
+        allow create: if isStoreOwner(storeId) || isStoreAdmin(storeId);
+        allow update, delete: if isStoreOwner(storeId) || isStoreAdmin(storeId);
+      }
+
+      // Members
+      match /members/{memberId} {
+        allow read: if isStoreMember(storeId) || isStoreOwner(storeId);
+        
+        // Joining logic: Allow a user to create their own member record if they provide the correct invitation code
+        // and have a pending invitation for their email.
+        allow create: if isSignedIn() && request.auth.uid == memberId && (
+          isStoreOwner(storeId) || 
+          (
+            get(/databases/$(database)/documents/stores/$(storeId)).data.invitationCode == request.resource.data.invitationCode &&
+            exists(/databases/$(database)/documents/stores/$(storeId)/invitations/$(request.auth.token.email))
+          )
+        );
+        
+        allow update, delete: if isStoreOwner(storeId);
+      }
+    }
+
+    // Default deny - Last resort
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

@@ -1,0 +1,99 @@
+{
+  "entities": {
+    "products": {
+      "title": "Product",
+      "description": "Store inventory items",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "sku": { "type": "string" },
+        "category": { "type": "string" },
+        "stock": { "type": "number" },
+        "minStock": { "type": "number" },
+        "price": { "type": "number" },
+        "priceCurrency": { "type": "string", "enum": ["USD", "IQD"] },
+        "status": { "type": "string", "enum": ["In Stock", "Low Stock", "Out of Stock"] },
+        "lastUpdated": { "type": "string" },
+        "updatedBy": { "type": "string" },
+        "iconType": { "type": "string" },
+        "imageUri": { "type": "string" },
+        "location": { "type": "string" },
+        "description": { "type": "string" }
+      },
+      "required": ["id", "name", "sku", "category", "stock", "price"]
+    },
+    "stores": {
+      "title": "Store",
+      "description": "A warehouse or shop",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "email": { "type": "string" },
+        "ownerId": { "type": "string" },
+        "invitationCode": { "type": "string" },
+        "createdAt": { "type": "string" }
+      },
+      "required": ["id", "name", "ownerId", "invitationCode"]
+    },
+    "invitations": {
+      "title": "Invitation",
+      "description": "Pending store invitation",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "email": { "type": "string" },
+        "storeId": { "type": "string" },
+        "status": { "type": "string", "enum": ["pending", "accepted", "declined"] },
+        "createdAt": { "type": "string" }
+      },
+      "required": ["id", "email", "storeId", "status"]
+    },
+    "members": {
+      "title": "Store Member",
+      "description": "Staff or admin belonging to a store",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "email": { "type": "string" },
+        "role": { "type": "string", "enum": ["Admin", "Staff"] },
+        "joinedAt": { "type": "string" }
+      },
+      "required": ["userId", "role"]
+    },
+    "users": {
+      "title": "User",
+      "description": "User metadata",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "activeStoreId": { "type": "string" },
+        "email": { "type": "string" }
+      },
+      "required": ["userId", "email"]
+    }
+  },
+  "firestore": {
+    "stores/{storeId}": {
+      "schema": "stores",
+      "description": "Store details"
+    },
+    "stores/{storeId}/products": {
+      "schema": "products",
+      "description": "Collection of products for a specific store"
+    },
+    "stores/{storeId}/invitations": {
+      "schema": "invitations",
+      "description": "Sent invitations"
+    },
+    "stores/{storeId}/members": {
+      "schema": "members",
+      "description": "Store staff list"
+    },
+    "users/{userId}": {
+      "schema": "users",
+      "description": "Global user data"
+    }
+  }
+}

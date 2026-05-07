@@ -1,0 +1,6 @@
+{
+  "name": "SmartWare | سیستەمی زیرەکی کۆگا",
+  "description": "سیستەمێکی پێشکەوتوو بۆ بەڕێوەبردنی کۆگا بە شێوەیەکی سەردەمیانە و پشتگیری کردنی هۆشی دەستکرد بۆ شیکردنەوەی داتا.",
+  "requestFramePermissions": ["camera", "microphone"],
+  "majorCapabilities": []
+}
