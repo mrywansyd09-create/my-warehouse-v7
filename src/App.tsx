@@ -123,7 +123,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { cn } from './lib/utils';
 import { MOCK_PRODUCTS, Product, DamagedItem, SparePart } from './data';
 import { auth, googleProvider, db } from './lib/firebase';
-import { onAuthStateChanged, signInWithPopup, signOut, User as FirebaseUser } from 'firebase/auth';
+import { onAuthStateChanged, signInWithRedirect, signOut, User as FirebaseUser } from 'firebase/auth';
 import { 
   collection, 
   doc, 
