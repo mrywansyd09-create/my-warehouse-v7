@@ -1626,7 +1626,7 @@ const LoginPage = () => {
   const handleLogin = async () => {
     setLoading(true);
     try {
-      await signInWithPopup(auth, googleProvider);
+      await signInWithRedirect(auth, googleProvider);
     } catch (error) {
       console.error(error);
     } finally {
